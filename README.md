@@ -17,9 +17,12 @@ Simple Python script to synchronize IMAP folders between two email accounts. The
 pip install -r requirements.txt
 
 # Run sync (use --dry-run first to test)
-python imapsync.py --host1 source.imap.com --user1 user1 --password1 pass1 \
-                   --host2 target.imap.com --user2 user2 --password2 pass2
+python imapsync.py --host1 source.imap.com --user1 "user1@example.com" --password1 "your!password" \
+                   --host2 target.imap.com --user2 "user2@example.com" --password2 "your@password" \
+                   --dry-run
 ```
+
+Note: Always put passwords in quotes if they contain special characters (!, @, #, $, etc.)
 
 ## Options
 
@@ -32,6 +35,7 @@ python imapsync.py --host1 source.imap.com --user1 user1 --password1 pass1 \
 - Use app-specific passwords for Gmail etc.
 - Test with --dry-run first
 - Don't store passwords in scripts
+- Put passwords in quotes if they contain special characters
 
 ## Tests
 
@@ -41,4 +45,4 @@ python -m unittest test_imapsync.py -v
 
 ## License
 
-This is free and unencumbered software released into the public domain - do whatever you want with it.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
