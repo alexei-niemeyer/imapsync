@@ -26,15 +26,15 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None) -> None:
 
 def connect_to_imap(host: str, username: str, password: str) -> Optional[IMAPClient]:
     """
-    Stellt eine Verbindung zum IMAP-Server her.
+    Establish a connection to the IMAP server.
     
     Args:
-        host: IMAP-Server-Hostname
-        username: Benutzername
-        password: Passwort
+        host: IMAP server hostname
+        username: Username
+        password: Password
         
     Returns:
-        IMAPClient-Objekt oder None bei Fehler
+        IMAPClient object or None if connection fails
     """
     try:
         ssl_context = ssl.create_default_context()
@@ -42,26 +42,26 @@ def connect_to_imap(host: str, username: str, password: str) -> Optional[IMAPCli
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
         logger = logging.getLogger(__name__)
-        logger.info(f"Verbinde mit IMAP-Server {host}...")
+        logger.info(f"Connecting to IMAP server {host}...")
         imap_client = IMAPClient(host, ssl=True, ssl_context=ssl_context)
         imap_client.login(username, password)
-        logger.info(f"Erfolgreich verbunden mit {host}")
+        logger.info(f"Successfully connected to {host}")
         return imap_client
     except Exception as e:
         logger = logging.getLogger(__name__)
-        logger.error(f"Fehler bei der Verbindung zum IMAP-Server {host}: {str(e)}")
+        logger.error(f"Error connecting to IMAP server {host}: {str(e)}")
         return None
 
 def get_message_ids(imap_client: IMAPClient, folder: str) -> Set[str]:
     """
-    Holt alle Message-IDs aus einem Ordner.
+    Get all Message-IDs from a folder.
     
     Args:
-        imap_client: IMAPClient-Objekt
-        folder: Name des Ordners
+        imap_client: IMAPClient object
+        folder: Name of the folder
         
     Returns:
-        Set von Message-IDs
+        Set of Message-IDs
     """
     try:
         imap_client.select_folder(folder)
@@ -70,11 +70,11 @@ def get_message_ids(imap_client: IMAPClient, folder: str) -> Set[str]:
         
         if not messages:
             logger = logging.getLogger(__name__)
-            logger.info(f"Keine Nachrichten in Ordner {folder} gefunden")
+            logger.info(f"No messages found in folder {folder}")
             return message_ids
             
         logger = logging.getLogger(__name__)
-        logger.info(f"Verarbeite {len(messages)} Nachrichten in Ordner {folder}")
+        logger.info(f"Processing {len(messages)} messages in folder {folder}")
         
         for msgid, data in imap_client.fetch(messages, ['RFC822']).items():
             msg = email.message_from_bytes(data[b'RFC822'])
@@ -84,7 +84,7 @@ def get_message_ids(imap_client: IMAPClient, folder: str) -> Set[str]:
         return message_ids
     except Exception as e:
         logger = logging.getLogger(__name__)
-        logger.error(f"Fehler beim Abrufen der Message-IDs aus Ordner {folder}: {str(e)}")
+        logger.error(f"Error retrieving Message-IDs from folder {folder}: {str(e)}")
         return set()
 
 def sync_imap_accounts(
@@ -93,56 +93,56 @@ def sync_imap_accounts(
     dry_run: bool = False
 ) -> None:
     """
-    Synchronisiert zwei IMAP-Konten.
+    Synchronize two IMAP accounts.
     
     Args:
-        host1: Quell-IMAP-Server
-        user1: Quell-Benutzername
-        password1: Quell-Passwort
-        host2: Ziel-IMAP-Server
-        user2: Ziel-Benutzername
-        password2: Ziel-Passwort
-        dry_run: Wenn True, werden keine Änderungen vorgenommen
+        host1: Source IMAP server
+        user1: Source username
+        password1: Source password
+        host2: Target IMAP server
+        user2: Target username
+        password2: Target password
+        dry_run: If True, no changes will be made
     """
     imap_client1 = connect_to_imap(host1, user1, password1)
     imap_client2 = connect_to_imap(host2, user2, password2)
 
     if not (imap_client1 and imap_client2):
         logger = logging.getLogger(__name__)
-        logger.error("Konnte nicht zu beiden IMAP-Servern verbinden")
+        logger.error("Could not connect to both IMAP servers")
         return
 
     try:
         folders = imap_client1.list_folders()
         logger = logging.getLogger(__name__)
-        logger.info(f"Gefundene Ordner auf {host1}: {len(folders)}")
+        logger.info(f"Found folders on {host1}: {len(folders)}")
 
         for flags, delimiter, folder_name in folders:
             logger = logging.getLogger(__name__)
-            logger.info(f"Synchronisiere Ordner: {folder_name}")
+            logger.info(f"Synchronizing folder: {folder_name}")
 
-            # Prüfe und erstelle Zielordner
+            # Check and create target folder
             target_folders = [f[2] for f in imap_client2.list_folders()]
             if folder_name not in target_folders:
                 if not dry_run:
                     imap_client2.create_folder(folder_name)
                 logger = logging.getLogger(__name__)
-                logger.info(f"Ordner {folder_name} auf {host2} erstellt")
+                logger.info(f"Created folder {folder_name} on {host2}")
 
-            # Hole existierende Nachrichten-IDs
+            # Get existing Message-IDs
             target_message_ids = get_message_ids(imap_client2, folder_name)
 
-            # Synchronisiere Nachrichten
+            # Synchronize messages
             imap_client1.select_folder(folder_name)
             messages = imap_client1.search(['ALL'])
             
             if not messages:
                 logger = logging.getLogger(__name__)
-                logger.info(f"Keine Nachrichten in Quellordner {folder_name}")
+                logger.info(f"No messages in source folder {folder_name}")
                 continue
 
             logger = logging.getLogger(__name__)
-            logger.info(f"Verarbeite {len(messages)} Nachrichten in {folder_name}")
+            logger.info(f"Processing {len(messages)} messages in {folder_name}")
             
             for msgid, data in imap_client1.fetch(messages, ['RFC822', 'FLAGS']).items():
                 msg = email.message_from_bytes(data[b'RFC822'])
@@ -150,7 +150,7 @@ def sync_imap_accounts(
                 
                 if not message_id:
                     logger = logging.getLogger(__name__)
-                    logger.warning(f"Nachricht {msgid} hat keine Message-ID")
+                    logger.warning(f"Message {msgid} has no Message-ID")
                     continue
                     
                 flags = data[b'FLAGS']
@@ -159,20 +159,20 @@ def sync_imap_accounts(
                     if not dry_run:
                         imap_client2.append(folder_name, data[b'RFC822'], flags=flags)
                         logger = logging.getLogger(__name__)
-                        logger.info(f"Nachricht {msgid} nach {folder_name} auf {host2} kopiert")
+                        logger.info(f"Copied message {msgid} to {folder_name} on {host2}")
                     else:
                         logger = logging.getLogger(__name__)
-                        logger.info(f"[Dry-Run] Würde Nachricht {msgid} nach {folder_name} auf {host2} kopieren")
+                        logger.info(f"[Dry-Run] Would copy message {msgid} to {folder_name} on {host2}")
                 else:
                     logger = logging.getLogger(__name__)
-                    logger.debug(f"Nachricht {msgid} bereits in {folder_name} auf {host2} vorhanden")
+                    logger.debug(f"Message {msgid} already exists in {folder_name} on {host2}")
 
     except Exception as e:
         logger = logging.getLogger(__name__)
-        logger.error(f"Fehler bei der Synchronisation: {str(e)}")
+        logger.error(f"Error during synchronization: {str(e)}")
     finally:
         logger = logging.getLogger(__name__)
-        logger.info("Schließe IMAP-Verbindungen...")
+        logger.info("Closing IMAP connections...")
         imap_client1.logout()
         imap_client2.logout()
 
