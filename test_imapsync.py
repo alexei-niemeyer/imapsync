@@ -12,12 +12,12 @@ class TestImapSync(unittest.TestCase):
     def test_connect_to_imap(self, mock_imap_client):
         mock_imap_client.return_value = self.mock_imap
         
-        # Test erfolgreiche Verbindung
+        # Test successful connection
         result = connect_to_imap('test.host', 'user', 'pass')
         self.assertIsNotNone(result)
         mock_imap_client.assert_called_once()
         
-        # Test fehlgeschlagene Verbindung
+        # Test failed connection
         mock_imap_client.side_effect = Exception('Connection failed')
         result = connect_to_imap('test.host', 'user', 'pass')
         self.assertIsNone(result)
@@ -34,24 +34,24 @@ class TestImapSync(unittest.TestCase):
             message_ids = get_message_ids(self.mock_imap, 'INBOX')
             self.assertEqual(message_ids, {'test-message-id'})
             
-            # Test leerer Ordner
+            # Test empty folder
             self.mock_imap.search.return_value = []
             message_ids = get_message_ids(self.mock_imap, 'INBOX')
             self.assertEqual(message_ids, set())
 
     @patch('imapsync.connect_to_imap')
     def test_sync_imap_accounts(self, mock_connect):
-        # Mock für erfolgreiche Verbindungen
+        # Mock for successful connections
         mock_source = MagicMock()
         mock_target = MagicMock()
         mock_connect.side_effect = [mock_source, mock_target]
         
-        # Mock für Ordnerliste
+        # Mock folder list
         mock_source.list_folders.return_value = [
             ([], '/', 'INBOX')
         ]
         
-        # Mock für Nachrichten
+        # Mock messages
         mock_source.search.return_value = [1]
         mock_source.fetch.return_value = {
             1: {
@@ -60,17 +60,17 @@ class TestImapSync(unittest.TestCase):
             }
         }
         
-        # Test Synchronisation
+        # Test synchronization
         sync_imap_accounts(
             'source.host', 'user1', 'pass1',
             'target.host', 'user2', 'pass2',
             dry_run=True
         )
         
-        # Überprüfe, ob die Verbindungen hergestellt wurden
+        # Verify connections were made
         self.assertEqual(mock_connect.call_count, 2)
         
-        # Überprüfe, ob die Ordner aufgelistet wurden
+        # Verify folders were listed
         mock_source.list_folders.assert_called_once()
 
 if __name__ == '__main__':
