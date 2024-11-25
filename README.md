@@ -1,62 +1,44 @@
 # IMAP Folder Sync
 
-A Python script for synchronizing IMAP folders between two email accounts.
+Simple Python script to synchronize IMAP folders between two email accounts. The script copies all emails from one IMAP server to another while preserving flags (read, important, etc.) and avoiding duplicates.
 
 ## Features
 
-- Synchronizes emails between two IMAP servers
-- Supports SSL/TLS encryption
-- Uses Message-IDs to avoid duplicates
-- Detailed logging with configurable output
-- Dry-run mode for safe testing
-- Preserves email flags (read, important, etc.)
+- Syncs emails between IMAP servers with SSL/TLS
+- Prevents duplicates using Message-IDs
+- Preserves email flags
+- Dry-run mode for testing
+- Detailed logging options
 
-## Installation
-
-1. Python 3.6 or higher required
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
+## Quick Start
 
 ```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run sync (use --dry-run first to test)
 python imapsync.py --host1 source.imap.com --user1 user1 --password1 pass1 \
-                   --host2 target.imap.com --user2 user2 --password2 pass2 \
-                   [--dry-run] [--debug] [--log-file path/to/logfile]
+                   --host2 target.imap.com --user2 user2 --password2 pass2
 ```
 
-### Parameters
+## Options
 
-- `--host1`: Source IMAP server (e.g., imap.gmail.com)
-- `--user1`: Username for source server
-- `--password1`: Password for source server
-- `--host2`: Target IMAP server
-- `--user2`: Username for target server
-- `--password2`: Password for target server
-- `--dry-run`: Optional. Simulates synchronization without making changes
-- `--debug`: Optional. Enables detailed logging
-- `--log-file`: Optional. Path to log file. If not specified, logs only to console
+- `--dry-run` Test run without making changes
+- `--debug` Show detailed debug information
+- `--log-file FILE` Save logs to file
 
-## Logging
+## Security Tips
 
-By default, the script logs to console. You can optionally specify a log file using the `--log-file` parameter. Debug-level logging can be enabled with the `--debug` flag.
+- Use app-specific passwords for Gmail etc.
+- Test with --dry-run first
+- Don't store passwords in scripts
 
 ## Tests
-
-Run unit tests with:
 
 ```bash
 python -m unittest test_imapsync.py -v
 ```
 
-## Security Notes
-
-- Use app-specific passwords for services like Gmail
-- Don't store passwords in plain text
-- Use dry-run mode before the first real synchronization
-
 ## License
 
-MIT License
+This is free and unencumbered software released into the public domain - do whatever you want with it.
